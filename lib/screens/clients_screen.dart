@@ -29,6 +29,34 @@ class _ClientsScreenState extends State<ClientsScreen> {
     });
   }
 
+  void _confirmDelete(client) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar cliente'),
+        content: Text(
+          '¿Eliminás "${client.name}"?\n\n'
+          'También se borrarán todos sus equipos y mantenimientos.',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await DatabaseHelper.instance.deleteClient(client.id!);
+              if (!mounted) return;
+              Navigator.pop(context);
+              _load();
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _addClient() {
     final nameCtrl = TextEditingController();
     final plantCtrl = TextEditingController();
@@ -51,17 +79,15 @@ class _ClientsScreenState extends State<ClientsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
               await DatabaseHelper.instance.insertClient(
                 Client(
-                  name: nameCtrl.text.trim(),
-                  plant: plantCtrl.text.trim(),
-                ),
+                    name: nameCtrl.text.trim(),
+                    plant: plantCtrl.text.trim()),
               );
               Navigator.pop(context);
               _load();
@@ -83,9 +109,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
             icon: const Icon(Icons.history),
             tooltip: 'Historial',
             onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const HistoryScreen()),
-            ),
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const HistoryScreen())),
           ),
         ],
       ),
@@ -97,37 +123,46 @@ class _ClientsScreenState extends State<ClientsScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _clients.isEmpty
-          ? const Center(child: Text('No hay clientes cargados'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _clients.length,
-              itemBuilder: (context, i) {
-                final c = _clients[i];
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF1565C0),
-                      child: Text(
-                        c.name[0].toUpperCase(),
-                        style: const TextStyle(color: Colors.white),
+              ? const Center(child: Text('No hay clientes cargados'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: _clients.length,
+                  itemBuilder: (context, i) {
+                    final c = _clients[i];
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFF1565C0),
+                          child: Text(
+                            c.name[0].toUpperCase(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(c.name,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text('Planta: ${c.plant}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red, size: 20),
+                              tooltip: 'Eliminar cliente',
+                              onPressed: () => _confirmDelete(c),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => EquipmentScreen(client: c)),
+                        ),
                       ),
-                    ),
-                    title: Text(
-                      c.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text('Planta: ${c.plant}'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => EquipmentScreen(client: c),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
     );
   }
 }
