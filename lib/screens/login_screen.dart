@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'clients_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final int daysRemaining;
+  const LoginScreen({super.key, this.daysRemaining = 0});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -65,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Usuario',
                   prefixIcon: const Icon(Icons.person),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
@@ -78,12 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Contraseña',
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
-                    icon:
-                        Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                    icon: Icon(
+                      _obscure ? Icons.visibility : Icons.visibility_off,
+                    ),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
@@ -91,16 +95,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 10),
-                Text(_error!,
-                    style: const TextStyle(color: Colors.red, fontSize: 13)),
+                Text(
+                  _error!,
+                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                ),
               ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _login,
-                  child: const Text('Iniciar sesión',
-                      style: TextStyle(fontSize: 16)),
+                  child: const Text(
+                    'Iniciar sesión',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
             ],
