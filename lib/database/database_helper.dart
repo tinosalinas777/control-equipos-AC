@@ -172,6 +172,14 @@ class DatabaseHelper {
     return await db.insert('equipments', equipment.toMap()..remove('id'));
   }
 
+  Future<int> deleteClient(int id) async {
+    final db = await database;
+    // Borra mantenimientos, equipos y el cliente
+    await db.delete('maintenances', where: 'client_id = ?', whereArgs: [id]);
+    await db.delete('equipments',   where: 'client_id = ?', whereArgs: [id]);
+    return await db.delete('clients', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<int> deleteEquipment(int id) async {
     final db = await database;
     // Borra también los mantenimientos asociados
@@ -238,6 +246,43 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [maintenanceId],
     );
+  }
+
+  // ── PERIODO DE PRUEBA ────────────────────────────────────────────────────
+  static const _trialDays = 2;
+
+  Future<DateTime?> getInstallDate() async {
+    final db = await database;
+    final maps = await db.query('config',
+        where: 'key = ?', whereArgs: ['install_date']);
+    if (maps.isEmpty) return null;
+    return DateTime.parse(maps.first['value'] as String);
+  }
+
+  Future<void> _saveInstallDate() async {
+    final db = await database;
+    await db.insert('config', {
+      'key': 'install_date',
+      'value': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<bool> isTrialValid() async {
+    var installDate = await getInstallDate();
+    if (installDate == null) {
+      await _saveInstallDate();
+      installDate = DateTime.now();
+    }
+    final expiry = installDate.add(const Duration(days: _trialDays));
+    return DateTime.now().isBefore(expiry);
+  }
+
+  Future<int> trialDaysLeft() async {
+    var installDate = await getInstallDate();
+    installDate ??= DateTime.now();
+    final expiry = installDate.add(const Duration(days: _trialDays));
+    final diff = expiry.difference(DateTime.now()).inDays;
+    return diff < 0 ? 0 : diff;
   }
 
   Future close() async {
