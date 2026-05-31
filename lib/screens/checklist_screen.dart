@@ -26,10 +26,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
 
   void _save() {
     context.read<MaintenanceProvider>().updateChecklist(
-          filterCleaning: _filterCleaning,
-          interiorCoilCleaning: _interiorCoil,
-          exteriorCoilCleaning: _exteriorCoil,
-        );
+      filterCleaning: _filterCleaning,
+      interiorCoilCleaning: _interiorCoil,
+      exteriorCoilCleaning: _exteriorCoil,
+    );
     Navigator.pop(context);
   }
 
@@ -53,8 +53,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
       ),
     ];
 
-    final allMarked = [_filterCleaning, _interiorCoil, _exteriorCoil]
-        .every((v) => v != -1);
+    final allMarked = [
+      _filterCleaning,
+      _interiorCoil,
+      _exteriorCoil,
+    ].every((v) => v != -1);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checklist de limpieza')),
@@ -76,7 +79,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) => _buildCheckCard(items[i]),
             ),
           ),
@@ -102,9 +105,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(item.label,
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(
+              item.label,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -144,10 +148,11 @@ class _CheckItem {
   final String label;
   final int value;
   final void Function(int) onChanged;
-  const _CheckItem(
-      {required this.label,
-      required this.value,
-      required this.onChanged});
+  const _CheckItem({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 }
 
 class _StatusButton extends StatelessWidget {
@@ -174,7 +179,9 @@ class _StatusButton extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? color.withOpacity(0.15) : Colors.grey.shade100,
+            color: selected
+                ? color.withValues(alpha: 0.15)
+                : Colors.grey.shade100,
             border: Border.all(
               color: selected ? color : Colors.grey.shade300,
               width: selected ? 2 : 1,
@@ -189,8 +196,7 @@ class _StatusButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: selected ? color : Colors.grey,
-                  fontWeight:
-                      selected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                   fontSize: 13,
                 ),
               ),
@@ -212,10 +218,10 @@ class _Legend extends StatelessWidget {
     return Row(
       children: [
         Container(
-            width: 12,
-            height: 12,
-            decoration:
-                BoxDecoration(color: color, shape: BoxShape.circle)),
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 13)),
       ],

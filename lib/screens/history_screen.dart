@@ -64,8 +64,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     try {
       final maintenance = await DatabaseHelper.instance.getMaintenance(id);
-      if (maintenance == null)
+      if (maintenance == null) {
         throw Exception('No se encontro el mantenimiento #$id');
+      }
 
       // Reconstruye Client desde el JOIN
       final client = Client(
@@ -212,7 +213,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               leading: CircleAvatar(
                                 backgroundColor: const Color(
                                   0xFF1565C0,
-                                ).withOpacity(0.1),
+                                ).withValues(alpha: 0.1),
                                 child: Text(
                                   '#$id',
                                   style: const TextStyle(
@@ -396,7 +397,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: _statusColor(value).withOpacity(0.1),
+              color: _statusColor(value).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
+import '../services/sync_service.dart';
 import '../models/maintenance.dart';
 import '../services/maintenance_provider.dart';
 import '../services/pdf_service.dart';
@@ -22,25 +23,18 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   String _statusLabel(int v) {
     switch (v) {
-      case 1:
-        return 'OK';
-      case 0:
-        return 'No OK';
-      case 2:
-        return 'N/A';
-      default:
-        return '—';
+      case 1: return 'OK';
+      case 0: return 'No OK';
+      case 2: return 'N/A';
+      default: return '—';
     }
   }
 
   Color _statusColor(int v) {
     switch (v) {
-      case 1:
-        return Colors.green;
-      case 0:
-        return Colors.red;
-      default:
-        return Colors.grey;
+      case 1: return Colors.green;
+      case 0: return Colors.red;
+      default: return Colors.grey;
     }
   }
 
@@ -53,6 +47,20 @@ class _SummaryScreenState extends State<SummaryScreen> {
     final m = prov.currentMaintenance!;
     final id = await DatabaseHelper.instance.insertMaintenance(m);
     final saved = await DatabaseHelper.instance.getMaintenance(id);
+
+    // Sincroniza con Firestore en segundo plano
+    if (saved != null) {
+      try {
+        await SyncService.saveMaintenance(
+          saved,
+          saved.clientId,
+          saved.equipmentId,
+        );
+      } catch (_) {
+        // Si falla la sync no interrumpe el flujo (modo offline)
+      }
+    }
+
     setState(() {
       _saving = false;
       _saved = true;
@@ -70,14 +78,13 @@ class _SummaryScreenState extends State<SummaryScreen> {
       final file = await PdfService.generate(m, client, equipment);
       await Printing.sharePdf(
         bytes: await file.readAsBytes(),
-        filename:
-            'mantenimiento_${equipment.number}_${m.date.replaceAll('/', '-')}.pdf',
+        filename: 'mantenimiento_${equipment.number}_${m.date.replaceAll('/', '-')}.pdf',
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al generar PDF: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al generar PDF: $e')),
+      );
     }
   }
 
@@ -122,10 +129,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     _row('Cliente', cl.name),
                     _row('Planta', cl.plant),
                     _row('Equipo', 'N° ${eq.number} · ${eq.location}'),
-                    _row(
-                      'Tipo',
-                      '${eq.capacity} BTU · ${eq.type} · ${eq.refrigerant}',
-                    ),
+                    _row('Tipo', '${eq.capacity} BTU · ${eq.type} · ${eq.refrigerant}'),
                     _row('Técnico', m.technician),
                     _row('Fecha', m.date),
                   ],
@@ -223,19 +227,12 @@ class _SummaryScreenState extends State<SummaryScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            m.technician,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
+                          Text(m.technician,
+                              style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       )
-                    : const Text(
-                        'Sin firma',
-                        style: TextStyle(color: Colors.grey),
-                      ),
+                    : const Text('Sin firma',
+                        style: TextStyle(color: Colors.grey)),
               ),
             ),
             const SizedBox(height: 12),
@@ -246,10 +243,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
               const Card(
                 child: Padding(
                   padding: EdgeInsets.all(12),
-                  child: Text(
-                    'Sin fotos',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                  child: Text('Sin fotos', style: TextStyle(color: Colors.grey)),
                 ),
               )
             else
@@ -261,12 +255,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (_, i) => ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(photos[i]),
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.file(File(photos[i]),
+                        width: 100, height: 100, fit: BoxFit.cover),
                   ),
                 ),
               ),
@@ -282,14 +272,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                              strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.save),
-                  label: Text(
-                    _saving ? 'Guardando...' : 'Guardar mantenimiento',
-                  ),
+                  label: Text(_saving ? 'Guardando...' : 'Guardar mantenimiento'),
                   onPressed: _saving ? null : _save,
                 ),
               ),
@@ -305,13 +290,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   children: [
                     const Icon(Icons.check_circle, color: Colors.green),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Mantenimiento guardado correctamente',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    const Text('Mantenimiento guardado correctamente',
+                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -350,10 +330,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-          color: Color(0xFF1565C0),
-        ),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Color(0xFF1565C0)),
       ),
     );
   }
@@ -364,10 +343,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-          ),
+          Text('$label: ',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
         ],
       ),
@@ -382,7 +359,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
         children: [
           Text(label, style: const TextStyle(fontSize: 13)),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
               color: _statusColor(status).withOpacity(0.12),
               borderRadius: BorderRadius.circular(6),
@@ -407,14 +385,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
           const SizedBox(height: 4),
           Wrap(
             spacing: 16,

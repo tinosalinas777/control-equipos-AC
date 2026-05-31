@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "515543216379",
+    "project_id": "control-ac-fcaca",
+    "storage_bucket": "control-ac-fcaca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515543216379:android:aa4f5542daafb9d617405e",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "515543216379-p8bsdvi7or2oo986jegmfh929hfho9m9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_application_1",
+            "certificate_hash": "37175e0b0830d64e6a50c3936852086ee815b19b"
+          }
+        },
+        {
+          "client_id": "515543216379-ab4vj16u3k2d6cai06kps72an74431l9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrNMXCU-CFQdJs0yisyaJBRE8dueXvHf0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "515543216379-ab4vj16u3k2d6cai06kps72an74431l9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

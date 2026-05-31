@@ -1,5 +1,5 @@
 name: flutter_application_1
-description: "Control AC"
+description: "A new Flutter project."
 publish_to: "none"
 
 version: 1.0.0+1
@@ -20,6 +20,13 @@ dependencies:
   signature: ^5.4.0
   intl: ^0.19.0
   path: ^1.9.0
+
+  # Firebase
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.1.0
+  cloud_firestore: ^5.2.0
+  google_sign_in: ^6.2.1
+  device_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:

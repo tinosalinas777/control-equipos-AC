@@ -29,8 +29,9 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
   }
 
   Future<void> _load() async {
-    final data = await DatabaseHelper.instance
-        .getEquipmentsByClient(widget.client.id!);
+    final data = await DatabaseHelper.instance.getEquipmentsByClient(
+      widget.client.id!,
+    );
     setState(() {
       _all = data;
       _filtered = _applyFilter(data, _searchCtrl.text);
@@ -42,10 +43,12 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
     if (q.isEmpty) return list;
     final lq = q.toLowerCase();
     return list
-        .where((e) =>
-            e.location.toLowerCase().contains(lq) ||
-            e.number.toString().contains(lq) ||
-            e.brand.toLowerCase().contains(lq))
+        .where(
+          (e) =>
+              e.location.toLowerCase().contains(lq) ||
+              e.number.toString().contains(lq) ||
+              e.brand.toLowerCase().contains(lq),
+        )
         .toList();
   }
 
@@ -55,12 +58,12 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
 
   // ── AGREGAR EQUIPO ────────────────────────────────────────────────────────
   void _addEquipment() {
-    final numCtrl      = TextEditingController();
+    final numCtrl = TextEditingController();
     final locationCtrl = TextEditingController();
     final capacityCtrl = TextEditingController();
-    String type        = 'Split';
+    String type = 'Split';
     String refrigerant = 'R410';
-    final brandCtrl    = TextEditingController();
+    final brandCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -71,35 +74,41 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextField(
-                      controller: numCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'N° equipo *',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: numCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'N° equipo *',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 5,
-                    child: TextField(
-                      controller: capacityCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Capacidad (BTU) *',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 5,
+                      child: TextField(
+                        controller: capacityCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Capacidad (BTU) *',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
                       ),
                     ),
-                  ),
-                ]),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: locationCtrl,
@@ -112,7 +121,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   decoration: const InputDecoration(
                     labelText: 'Tipo',
                     border: OutlineInputBorder(),
@@ -125,7 +134,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: refrigerant,
+                  initialValue: refrigerant,
                   decoration: const InputDecoration(
                     labelText: 'Refrigerante',
                     border: OutlineInputBorder(),
@@ -151,8 +160,9 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 if (numCtrl.text.isEmpty ||
@@ -160,15 +170,17 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
                     capacityCtrl.text.isEmpty) {
                   return;
                 }
-                await DatabaseHelper.instance.insertEquipment(Equipment(
-                  clientId: widget.client.id!,
-                  number: int.parse(numCtrl.text),
-                  location: locationCtrl.text.trim(),
-                  capacity: capacityCtrl.text.trim(),
-                  type: type,
-                  refrigerant: refrigerant,
-                  brand: brandCtrl.text.trim(),
-                ));
+                await DatabaseHelper.instance.insertEquipment(
+                  Equipment(
+                    clientId: widget.client.id!,
+                    number: int.parse(numCtrl.text),
+                    location: locationCtrl.text.trim(),
+                    capacity: capacityCtrl.text.trim(),
+                    type: type,
+                    refrigerant: refrigerant,
+                    brand: brandCtrl.text.trim(),
+                  ),
+                );
                 if (!mounted) return;
                 Navigator.pop(ctx);
                 _load();
@@ -193,8 +205,9 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
@@ -221,11 +234,14 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Equipo: ${equipment.displayName}',
-                style: const TextStyle(fontWeight: FontWeight.w500)),
             Text(
-                '${equipment.capacity} BTU · ${equipment.type} · ${equipment.refrigerant}',
-                style: const TextStyle(fontSize: 13, color: Colors.grey)),
+              'Equipo: ${equipment.displayName}',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            Text(
+              '${equipment.capacity} BTU · ${equipment.type} · ${equipment.refrigerant}',
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: techCtrl,
@@ -240,16 +256,17 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               if (techCtrl.text.trim().isEmpty) return;
               context.read<MaintenanceProvider>().startMaintenance(
-                    widget.client,
-                    equipment,
-                    techCtrl.text.trim(),
-                  );
+                widget.client,
+                equipment,
+                techCtrl.text.trim(),
+              );
               Navigator.pop(context);
               Navigator.push(
                 context,
@@ -274,8 +291,10 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.client.name, style: const TextStyle(fontSize: 16)),
-            Text('Planta ${widget.client.plant}',
-                style: const TextStyle(fontSize: 12, color: Colors.white70)),
+            Text(
+              'Planta ${widget.client.plant}',
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
           ],
         ),
       ),
@@ -295,7 +314,8 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
                 hintText: 'Buscar por ubicación, N° o marca...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 filled: true,
                 fillColor: Colors.white,
               ),
@@ -305,8 +325,10 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Text('${_filtered.length} equipo${_filtered.length == 1 ? '' : 's'}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  '${_filtered.length} equipo${_filtered.length == 1 ? '' : 's'}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -315,83 +337,95 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.ac_unit,
-                                size: 64, color: Colors.grey.shade300),
-                            const SizedBox(height: 12),
-                            const Text('Sin equipos',
-                                style: TextStyle(color: Colors.grey)),
-                            const SizedBox(height: 8),
-                            TextButton.icon(
-                              onPressed: _addEquipment,
-                              icon: const Icon(Icons.add),
-                              label: const Text('Agregar equipo'),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.ac_unit,
+                          size: 64,
+                          color: Colors.grey.shade300,
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-                        itemCount: _filtered.length,
-                        itemBuilder: (context, i) {
-                          final eq = _filtered[i];
-                          return Card(
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.blue.shade50,
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Sin equipos',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: _addEquipment,
+                          icon: const Icon(Icons.add),
+                          label: const Text('Agregar equipo'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                    itemCount: _filtered.length,
+                    itemBuilder: (context, i) {
+                      final eq = _filtered[i];
+                      return Card(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue.shade50,
+                            child: Text(
+                              '${eq.number}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            eq.location,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            '${eq.capacity} BTU · ${eq.type}'
+                            '${eq.brand.isNotEmpty ? ' · ${eq.brand}' : ''}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _refrigerantColor(
+                                    eq.refrigerant,
+                                  ).withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                                 child: Text(
-                                  '${eq.number}',
+                                  eq.refrigerant,
                                   style: TextStyle(
+                                    color: _refrigerantColor(eq.refrigerant),
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade800,
-                                    fontSize: 13,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
-                              title: Text(eq.location,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600)),
-                              subtitle: Text(
-                                  '${eq.capacity} BTU · ${eq.type}'
-                                  '${eq.brand.isNotEmpty ? ' · ${eq.brand}' : ''}'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: _refrigerantColor(eq.refrigerant)
-                                          .withOpacity(0.12),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      eq.refrigerant,
-                                      style: TextStyle(
-                                        color:
-                                            _refrigerantColor(eq.refrigerant),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline,
-                                        color: Colors.red, size: 20),
-                                    tooltip: 'Eliminar equipo',
-                                    onPressed: () => _confirmDelete(eq),
-                                  ),
-                                ],
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                                tooltip: 'Eliminar equipo',
+                                onPressed: () => _confirmDelete(eq),
                               ),
-                              onTap: () => _startMaintenance(eq),
-                            ),
-                          );
-                        },
-                      ),
+                            ],
+                          ),
+                          onTap: () => _startMaintenance(eq),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

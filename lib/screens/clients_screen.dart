@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../services/sync_service.dart';
 import '../models/client.dart';
 import 'equipment_screen.dart';
 import 'history_screen.dart';
@@ -22,6 +23,19 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   Future<void> _load() async {
+    // Si no hay clientes locales intenta bajar de Firestore
+    final local = await DatabaseHelper.instance.getClients();
+    if (local.isEmpty) {
+      try {
+        await SyncService.downloadAll();
+      } catch (_) {
+        // Sin conexión, continúa con lo que hay
+      }
+    } else {
+      // Sube datos locales a Firestore en segundo plano
+      SyncService.uploadAll().catchError((_) {});
+    }
+
     final data = await DatabaseHelper.instance.getClients();
     setState(() {
       _clients = data;

@@ -62,8 +62,10 @@ class MaintenanceScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Nuevo mantenimiento', style: TextStyle(fontSize: 16)),
-            Text('Eq. ${eq.number} · ${eq.location}',
-                style: const TextStyle(fontSize: 12, color: Colors.white70)),
+            Text(
+              'Eq. ${eq.number} · ${eq.location}',
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
           ],
         ),
       ),
@@ -80,23 +82,37 @@ class MaintenanceScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    const Icon(Icons.ac_unit,
-                        color: Color(0xFF1565C0), size: 32),
+                    const Icon(
+                      Icons.ac_unit,
+                      color: Color(0xFF1565C0),
+                      size: 32,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(eq.location,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15)),
                           Text(
-                              '${eq.capacity} BTU · ${eq.type} · ${eq.refrigerant}${eq.brand.isNotEmpty ? ' · ${eq.brand}' : ''}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey)),
-                          Text('Técnico: ${m.technician}  ·  ${m.date}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey)),
+                            eq.location,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '${eq.capacity} BTU · ${eq.type} · ${eq.refrigerant}${eq.brand.isNotEmpty ? ' · ${eq.brand}' : ''}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Técnico: ${m.technician}  ·  ${m.date}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -117,16 +133,17 @@ class MaintenanceScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.summarize),
-                    label: const Text('Ver resumen y guardar',
-                        style: TextStyle(fontSize: 16)),
+                    label: const Text(
+                      'Ver resumen y guardar',
+                      style: TextStyle(fontSize: 16),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade700,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const SummaryScreen()),
+                      MaterialPageRoute(builder: (_) => const SummaryScreen()),
                     ),
                   ),
                 ),
@@ -142,15 +159,14 @@ class MaintenanceScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
             color: step.done
                 ? Colors.green.shade50
-                : step.color.withOpacity(0.1),
+                : step.color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -159,16 +175,19 @@ class MaintenanceScreen extends StatelessWidget {
             size: 28,
           ),
         ),
-        title: Text(step.label,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          step.label,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         subtitle: Text(step.subtitle),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (step.done)
-              const Text('Listo',
-                  style:
-                      TextStyle(color: Colors.green, fontSize: 12)),
+              const Text(
+                'Listo',
+                style: TextStyle(color: Colors.green, fontSize: 12),
+              ),
             const SizedBox(width: 4),
             const Icon(Icons.arrow_forward_ios, size: 14),
           ],

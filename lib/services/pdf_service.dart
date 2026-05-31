@@ -11,11 +11,20 @@ import '../models/equipment.dart';
 class PdfService {
   // Carga las fuentes Roboto (con soporte Unicode completo)
   static Future<_Fonts> _loadFonts() async {
-    final regular = await rootBundle.load(
+    // Copia los bytes a un buffer escribible (rootBundle devuelve read-only)
+    final regularData = await rootBundle.load(
       'fonts/Roboto-Italic-VariableFont_wdth,wght.ttf',
     );
-    final bold = await rootBundle.load(
+    final regular = regularData.buffer.asByteData(
+      regularData.offsetInBytes,
+      regularData.lengthInBytes,
+    );
+    final boldData = await rootBundle.load(
       'fonts/Roboto-VariableFont_wdth,wght.ttf',
+    );
+    final bold = boldData.buffer.asByteData(
+      boldData.offsetInBytes,
+      boldData.lengthInBytes,
     );
     return _Fonts(regular: pw.Font.ttf(regular), bold: pw.Font.ttf(bold));
   }
