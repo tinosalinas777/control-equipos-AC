@@ -15,3 +15,29 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+reglas de seguridad firebase:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /licenses/{uid} {
+      // El usuario puede leer su licencia
+      allow read: if request.auth != null && request.auth.uid == uid;
+      // El usuario puede actualizar SOLO los campos de dispositivo
+      allow update: if request.auth != null 
+                    && request.auth.uid == uid
+                    && request.resource.data.active == resource.data.active;
+      allow create, delete: if false;
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
