@@ -23,21 +23,31 @@ class NoLicenseScreen extends StatelessWidget {
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.verified_user,
-                    size: 72, color: Colors.white),
+                child: const Icon(
+                  Icons.verified_user,
+                  size: 72,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 32),
-              const Text('Sin licencia activa',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center),
+              const Text(
+                'Sin licencia activa',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Tu cuenta no tiene una licencia activa.\n'
                 'Contactate para adquirir la app.',
-                style: TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                  height: 1.5,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
@@ -60,25 +70,40 @@ class NoLicenseScreen extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Column(children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.phone, color: Color(0xFF1565C0)),
-                    SizedBox(width: 8),
-                    Text('+54 11 1234-5678',
-                        style: TextStyle(
+                child: const Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.phone, color: Color(0xFF1565C0)),
+                        SizedBox(width: 8),
+                        Text(
+                          '+54 11 2722-7613',
+                          style: TextStyle(
                             color: Color(0xFF1565C0),
                             fontWeight: FontWeight.bold,
-                            fontSize: 16)),
-                  ]),
-                  SizedBox(height: 8),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.email, color: Color(0xFF1565C0)),
-                    SizedBox(width: 8),
-                    Text('contacto@tuempresa.com',
-                        style: TextStyle(
-                            color: Color(0xFF1565C0), fontSize: 14)),
-                  ]),
-                ]),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.email, color: Color(0xFF1565C0)),
+                        SizedBox(width: 8),
+                        Text(
+                          'salinascristianc137@gmail.com',
+                          style: TextStyle(
+                            color: Color(0xFF1565C0),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               TextButton(
@@ -86,8 +111,10 @@ class NoLicenseScreen extends StatelessWidget {
                   await AuthService.signOut();
                   if (context.mounted) Navigator.of(context).pop();
                 },
-                child: const Text('Cerrar sesión',
-                    style: TextStyle(color: Colors.white70)),
+                child: const Text(
+                  'Cerrar sesión',
+                  style: TextStyle(color: Colors.white70),
+                ),
               ),
             ],
           ),
