@@ -41,6 +41,18 @@ class LicenseService {
 
     if (!active) return const LicenseResult(LicenseStatus.noLicense);
 
+    // Si deviceId esta vacio es la primera vez -> registra este dispositivo
+    if (storedDevice.isEmpty) {
+      final info    = DeviceInfoPlugin();
+      final android = await info.androidInfo;
+      await _db.collection('licenses').doc(user.uid).update({
+        'deviceId':    android.id,
+        'deviceModel': '\${android.brand} \${android.model}',
+        'activatedAt': FieldValue.serverTimestamp(),
+      });
+      return const LicenseResult(LicenseStatus.active);
+    }
+
     if (storedDevice == deviceId) {
       return const LicenseResult(LicenseStatus.active);
     }
