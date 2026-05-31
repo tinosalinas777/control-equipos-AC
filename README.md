@@ -15,6 +15,13 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+Exacto. El proceso completo para un cliente nuevo es:
+1 — El cliente instala el APK y abre la app
+2 — Inicia sesión con su Google
+3 — Vos vas a Firebase Console → Authentication y ves el email y el UID del nuevo usuario
+4 — Vas a Firestore → colección licenses y creás un documento nuevo:
+CampoTipoValoractivebooleantruedeviceIdstring(vacío)deviceModelstring(vacío)
+5 — El cliente vuelve a abrir la app → entra directo, y automáticamente registra su dispositivo.
 
 reglas de seguridad firebase:
 
@@ -43,10 +50,4 @@ service cloud.firestore {
 }
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++
-Exacto. El proceso completo para un cliente nuevo es:
-1 — El cliente instala el APK y abre la app
-2 — Inicia sesión con su Google
-3 — Vos vas a Firebase Console → Authentication y ves el email y el UID del nuevo usuario
-4 — Vas a Firestore → colección licenses y creás un documento nuevo:
-CampoTipoValoractivebooleantruedeviceIdstring(vacío)deviceModelstring(vacío)
-5 — El cliente vuelve a abrir la app → entra directo, y automáticamente registra su dispositivo.
+
