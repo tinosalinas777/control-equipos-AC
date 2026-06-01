@@ -6,7 +6,7 @@ import '../models/equipment.dart';
 import '../models/maintenance.dart';
 
 class SyncService {
-  static final _db  = FirebaseFirestore.instance;
+  static final _db = FirebaseFirestore.instance;
 
   static String get _uid => FirebaseAuth.instance.currentUser!.uid;
 
@@ -17,37 +17,47 @@ class SyncService {
   static CollectionReference _equipments(String clientId) =>
       _clients.doc(clientId).collection('equipments');
 
-  static CollectionReference _maintenances(String clientId, String equipmentId) =>
+  static CollectionReference _maintenances(
+          String clientId, String equipmentId) =>
       _equipments(clientId).doc(equipmentId).collection('maintenances');
 
-  // ── SUBIR a Firestore ─────────────────────────────────────────────────────
+  // ── SUBIR un cliente individual a Firestore ───────────────────────────────
+  static Future<void> uploadClient(Client c) async {
+    await _clients.doc('${c.id}').set({
+      'name': c.name,
+      'plant': c.plant,
+      'localId': c.id,
+    });
+  }
+
+  // ── SUBIR todo a Firestore ────────────────────────────────────────────────
   static Future<void> uploadAll() async {
     final clients = await DatabaseHelper.instance.getClients();
     for (final c in clients) {
       await _clients.doc('${c.id}').set({
-        'name':  c.name,
+        'name': c.name,
         'plant': c.plant,
         'localId': c.id,
       });
 
-      final equipments = await DatabaseHelper.instance
-          .getEquipmentsByClient(c.id!);
+      final equipments =
+          await DatabaseHelper.instance.getEquipmentsByClient(c.id!);
       for (final e in equipments) {
         await _equipments('${c.id}').doc('${e.id}').set({
-          'number':     e.number,
-          'location':   e.location,
-          'capacity':   e.capacity,
-          'type':       e.type,
-          'refrigerant':e.refrigerant,
-          'brand':      e.brand,
-          'localId':    e.id,
+          'number': e.number,
+          'location': e.location,
+          'capacity': e.capacity,
+          'type': e.type,
+          'refrigerant': e.refrigerant,
+          'brand': e.brand,
+          'localId': e.id,
         });
 
-        final maintenances = await DatabaseHelper.instance
-            .getMaintenancesByEquipment(e.id!);
+        final maintenances =
+            await DatabaseHelper.instance.getMaintenancesByEquipment(e.id!);
         for (final m in maintenances) {
-          final mm = await DatabaseHelper.instance.getMaintenance(
-              (m['id'] as int));
+          final mm =
+              await DatabaseHelper.instance.getMaintenance((m['id'] as int));
           if (mm == null) continue;
           await _maintenances('${c.id}', '${e.id}')
               .doc('${mm.id}')
@@ -57,13 +67,26 @@ class SyncService {
     }
   }
 
-  // ── DESCARGAR de Firestore ────────────────────────────────────────────────
+  // ── DESCARGAR de Firestore (solo si no existe localmente) ─────────────────
   static Future<void> downloadAll() async {
     final clientSnaps = await _clients.get();
+    if (clientSnaps.docs.isEmpty) return;
+
+    // IDs que ya existen en SQLite — para no duplicar
+    final localClients = await DatabaseHelper.instance.getClients();
+    final localIds = localClients.map((c) => c.id).toSet();
+
     for (final cd in clientSnaps.docs) {
       final data = cd.data() as Map<String, dynamic>;
+
+      // Si el localId ya existe localmente, lo saltamos
+      final firestoreLocalId = data['localId'] as int?;
+      if (firestoreLocalId != null && localIds.contains(firestoreLocalId)) {
+        continue;
+      }
+
       final client = Client(
-        name:  data['name']  ?? '',
+        name: data['name'] ?? '',
         plant: data['plant'] ?? '',
       );
       final clientId = await DatabaseHelper.instance.insertClient(client);
@@ -72,13 +95,13 @@ class SyncService {
       for (final ed in eqSnaps.docs) {
         final ed2 = ed.data() as Map<String, dynamic>;
         final eq = Equipment(
-          clientId:   clientId,
-          number:     ed2['number']     ?? 0,
-          location:   ed2['location']   ?? '',
-          capacity:   ed2['capacity']   ?? '',
-          type:       ed2['type']       ?? '',
-          refrigerant:ed2['refrigerant']?? '',
-          brand:      ed2['brand']      ?? '',
+          clientId: clientId,
+          number: ed2['number'] ?? 0,
+          location: ed2['location'] ?? '',
+          capacity: ed2['capacity'] ?? '',
+          type: ed2['type'] ?? '',
+          refrigerant: ed2['refrigerant'] ?? '',
+          brand: ed2['brand'] ?? '',
         );
         final eqId = await DatabaseHelper.instance.insertEquipment(eq);
 
@@ -92,6 +115,19 @@ class SyncService {
     }
   }
 
+  // ── ELIMINAR cliente de Firestore en cascada ──────────────────────────────
+  static Future<void> deleteClient(int localId) async {
+    final eqSnaps = await _equipments('$localId').get();
+    for (final ed in eqSnaps.docs) {
+      final mSnaps = await _maintenances('$localId', ed.id).get();
+      for (final md in mSnaps.docs) {
+        await md.reference.delete();
+      }
+      await ed.reference.delete();
+    }
+    await _clients.doc('$localId').delete();
+  }
+
   // ── Guardar mantenimiento individual ──────────────────────────────────────
   static Future<void> saveMaintenance(
       Maintenance m, int clientId, int equipmentId) async {
@@ -102,53 +138,54 @@ class SyncService {
 
   // ── helpers ───────────────────────────────────────────────────────────────
   static Map<String, dynamic> _maintenanceToMap(Maintenance m) => {
-        'technician':           m.technician,
-        'date':                 m.date,
-        'filterCleaning':       m.filterCleaning,
+        'technician': m.technician,
+        'date': m.date,
+        'filterCleaning': m.filterCleaning,
         'interiorCoilCleaning': m.interiorCoilCleaning,
         'exteriorCoilCleaning': m.exteriorCoilCleaning,
-        'voltageL1L2':          m.voltageL1L2,
-        'voltageL2L3':          m.voltageL2L3,
-        'voltageL3L1':          m.voltageL3L1,
-        'compressorCurrentL1':  m.compressorCurrentL1,
-        'compressorCurrentL2':  m.compressorCurrentL2,
-        'compressorCurrentL3':  m.compressorCurrentL3,
-        'fanCurrentL1':         m.fanCurrentL1,
-        'fanCurrentL2':         m.fanCurrentL2,
-        'fanCurrentL3':         m.fanCurrentL3,
-        'lowPressure':          m.lowPressure,
-        'highPressure':         m.highPressure,
-        'ambientTemperature':   m.ambientTemperature,
-        'evaporatorTemperature':m.evaporatorTemperature,
-        'gasCharge':            m.gasCharge,
-        'observations':         m.observations,
-        'syncedAt':             FieldValue.serverTimestamp(),
+        'voltageL1L2': m.voltageL1L2,
+        'voltageL2L3': m.voltageL2L3,
+        'voltageL3L1': m.voltageL3L1,
+        'compressorCurrentL1': m.compressorCurrentL1,
+        'compressorCurrentL2': m.compressorCurrentL2,
+        'compressorCurrentL3': m.compressorCurrentL3,
+        'fanCurrentL1': m.fanCurrentL1,
+        'fanCurrentL2': m.fanCurrentL2,
+        'fanCurrentL3': m.fanCurrentL3,
+        'lowPressure': m.lowPressure,
+        'highPressure': m.highPressure,
+        'ambientTemperature': m.ambientTemperature,
+        'evaporatorTemperature': m.evaporatorTemperature,
+        'gasCharge': m.gasCharge,
+        'observations': m.observations,
+        'syncedAt': FieldValue.serverTimestamp(),
       };
 
   static Maintenance _maintenanceFromMap(
-      Map<String, dynamic> m, int clientId, int equipmentId) =>
+          Map<String, dynamic> m, int clientId, int equipmentId) =>
       Maintenance(
-        clientId:             clientId,
-        equipmentId:          equipmentId,
-        technician:           m['technician']           ?? '',
-        date:                 m['date']                 ?? '',
-        filterCleaning:       m['filterCleaning']       ?? -1,
+        clientId: clientId,
+        equipmentId: equipmentId,
+        technician: m['technician'] ?? '',
+        date: m['date'] ?? '',
+        filterCleaning: m['filterCleaning'] ?? -1,
         interiorCoilCleaning: m['interiorCoilCleaning'] ?? -1,
         exteriorCoilCleaning: m['exteriorCoilCleaning'] ?? -1,
-        voltageL1L2:          (m['voltageL1L2']         as num?)?.toDouble(),
-        voltageL2L3:          (m['voltageL2L3']         as num?)?.toDouble(),
-        voltageL3L1:          (m['voltageL3L1']         as num?)?.toDouble(),
-        compressorCurrentL1:  (m['compressorCurrentL1'] as num?)?.toDouble(),
-        compressorCurrentL2:  (m['compressorCurrentL2'] as num?)?.toDouble(),
-        compressorCurrentL3:  (m['compressorCurrentL3'] as num?)?.toDouble(),
-        fanCurrentL1:         (m['fanCurrentL1']        as num?)?.toDouble(),
-        fanCurrentL2:         (m['fanCurrentL2']        as num?)?.toDouble(),
-        fanCurrentL3:         (m['fanCurrentL3']        as num?)?.toDouble(),
-        lowPressure:          (m['lowPressure']         as num?)?.toDouble(),
-        highPressure:         (m['highPressure']        as num?)?.toDouble(),
-        ambientTemperature:   (m['ambientTemperature']  as num?)?.toDouble(),
-        evaporatorTemperature:(m['evaporatorTemperature']as num?)?.toDouble(),
-        gasCharge:            (m['gasCharge']           as num?)?.toDouble(),
-        observations:         m['observations']         ?? '',
+        voltageL1L2: (m['voltageL1L2'] as num?)?.toDouble(),
+        voltageL2L3: (m['voltageL2L3'] as num?)?.toDouble(),
+        voltageL3L1: (m['voltageL3L1'] as num?)?.toDouble(),
+        compressorCurrentL1: (m['compressorCurrentL1'] as num?)?.toDouble(),
+        compressorCurrentL2: (m['compressorCurrentL2'] as num?)?.toDouble(),
+        compressorCurrentL3: (m['compressorCurrentL3'] as num?)?.toDouble(),
+        fanCurrentL1: (m['fanCurrentL1'] as num?)?.toDouble(),
+        fanCurrentL2: (m['fanCurrentL2'] as num?)?.toDouble(),
+        fanCurrentL3: (m['fanCurrentL3'] as num?)?.toDouble(),
+        lowPressure: (m['lowPressure'] as num?)?.toDouble(),
+        highPressure: (m['highPressure'] as num?)?.toDouble(),
+        ambientTemperature: (m['ambientTemperature'] as num?)?.toDouble(),
+        evaporatorTemperature:
+            (m['evaporatorTemperature'] as num?)?.toDouble(),
+        gasCharge: (m['gasCharge'] as num?)?.toDouble(),
+        observations: m['observations'] ?? '',
       );
 }
